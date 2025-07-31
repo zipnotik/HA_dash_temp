@@ -1,0 +1,1238 @@
+views:
+  - title: Home
+    path: Home
+    icon: mdi:home
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: General
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-person-card
+                entity: person.jonte
+                fill_container: false
+                icon_type: entity-picture
+              - type: custom:mushroom-person-card
+                entity: person.ca
+                icon_type: entity-picture
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:calendar
+                icon_color: red
+                picture: ''
+                content: '{{ states(''sensor.time'') }}'
+              - type: weather
+                entity: weather.forecast_home
+                show_conditions: true
+                show_temperature: true
+              - type: entity
+                entity: sensor.number_lights_on
+                icon: mdi:lightbulb
+                icon_color: orange
+                name: Lights On
+            alignment: center
+          - type: custom:mushroom-title-card
+            title: |-
+              {% set time = now().hour %}
+              {% if (time >= 18) %}
+                Good Evening, {{user}}!
+              {% elif (time >= 12) %}
+                Good Afternoon, {{user}}!
+              {% elif (time >= 5) %}
+                Good Morning, {{user}}!
+              {% else %}
+                Hello, {{user}}!
+              {% endif %}
+            subtitle: ''
+          - type: custom:mini-graph-card
+            hours_to_show: 48
+            align_state: center
+            show:
+              name: false
+              icon: false
+              labels: true
+              labels_secondary: true
+            entities:
+              - entity: sensor.sonoff_temp_downstairs_temperature
+                show_state: false
+                name: 1st Floor
+              - color: gray
+                entity: sun.sun
+                name: sun
+                y_axis: secondary
+                show_line: false
+                show_points: false
+                show_legend: false
+              - entity: sensor.sonoff_snzb_02d_temperature
+                show_state: false
+                name: 2nd Floor
+              - color: gray
+                entity: sun.sun
+                name: sun
+                y_axis: secondary
+                show_line: false
+                show_points: false
+                show_legend: false
+              - entity: sensor.sonoff_snzb_02d_temperature
+                aggregate_func: max
+                name: Max
+                show_graph: false
+                show:
+                  in_header: true
+                  legend_value: true
+                  extremas: true
+              - entity: sensor.sonoff_snzb_02d_temperature
+                aggregate_func: min
+                name: Min
+                show_graph: false
+              - entity: sensor.sonoff_snzb_02d_temperature
+                aggregate_func: avg
+                name: Avg
+                color: green
+                show_graph: false
+            state_map:
+              - value: below_horizon
+                label: Night
+              - value: above_horizon
+                label: Day
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            header:
+              show: true
+              show_states: true
+              colorize_states: true
+            span:
+              start: day
+            now:
+              show: true
+              label: Now
+            series:
+              - entity: sensor.nordpool_kwh_fi_eur_2_10_0255
+                float_precision: 2
+                show:
+                  in_header: false
+                  legend_value: false
+                  extremas: true
+                name: Tomorrow
+                offset: +1d
+                type: line
+                color: orangered
+                data_generator: |
+                  return entity.attributes.raw_tomorrow.map((start, index) => {
+                    return [new Date(start["start"]).getTime(), entity.attributes.raw_tomorrow[index]["value"]];
+                  });
+              - entity: sensor.nordpool_kwh_fi_eur_2_10_0255
+                float_precision: 2
+                show:
+                  in_header: false
+                  legend_value: false
+                  extremas: true
+                name: Today
+                type: line
+                color: '#7BD39A'
+                data_generator: |
+                  return entity.attributes.raw_today.map((start, index) => {
+                    return [new Date(start["start"]).getTime(), entity.attributes.raw_today[index]["value"]];
+                  });
+              - entity: sensor.nordpool_kwh_fi_eur_2_10_0255
+                name: Price Right Now
+                color: '#7BD39A'
+                type: column
+                show:
+                  in_chart: false
+                float_precision: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: 1st Floor
+          - square: false
+            columns: 2
+            type: grid
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Kitchen Lights
+                icon: hue:room-kitchen
+                entity: light.kitchen
+                tap_action:
+                  action: toggle
+                secondary: >
+                  {% if is_state("light.kitchen", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.kitchen", "on") %}
+
+                  {{ ((state_attr("light.kitchen", "brightness")|int) / 2.55 ) |
+                  round(0) }}% |
+
+                  {% elif is_state("light.kitchen", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.kitchen", "off") %}
+
+                  {% elif is_state("light.kitchen", "on") %}
+                  orange
+                  {% elif is_state("light.kitchen", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                fill_container: true
+                badge_icon: >
+                  {% if is_state("binary_sensor.main_motion", "off") %}
+
+
+                  {% elif is_state("binary_sensor.main_motion", "on") %}
+
+                  clear
+
+                  {% elif is_state("binary_sensor.main_motion", "unavailable")
+                  %}
+
+                  mdi:help
+
+                  {% else %}
+
+                  mdi:help
+
+                  {% endif %}
+                badge_color: >
+                  {% if is_state("binary_sensor.main_motion", "off") %}
+
+                  green
+
+                  {% elif is_state("binary_sensor.main_motion", "on") %}
+
+                  blue
+
+                  {% elif is_state("binary_sensor.main_motion", "unavailable")
+                  %}
+
+                  red
+
+                  {% else %}
+
+                  red
+
+                  {% endif %}
+                multiline_secondary: false
+              - type: custom:mushroom-template-card
+                primary: Living Room Lights
+                icon: hue:room-living
+                entity: light.entertainment_room
+                tap_action:
+                  action: toggle
+                secondary: >
+                  {% if is_state("light.entertainment_room", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.entertainment_room", "on") %}
+
+                  {{ ((state_attr("light.entertainment_room", "brightness")|int)
+                  / 2.55 ) | round(0) }}% |
+
+                  {% elif is_state("light.entertainment_room", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.entertainment_room", "off") %}
+
+                  {% elif is_state("light.entertainment_room", "on") %}
+                  orange
+                  {% elif is_state("light.entertainment_room", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                fill_container: true
+                badge_icon: >
+                  {% if is_state("binary_sensor.main_motion", "off") %}
+
+
+                  {% elif is_state("binary_sensor.main_motion", "on") %}
+
+                  clear
+
+                  {% elif is_state("binary_sensor.main_motion", "unavailable")
+                  %}
+
+                  mdi:help
+
+                  {% else %}
+
+                  mdi:help
+
+                  {% endif %}
+                badge_color: >
+                  {% if is_state("binary_sensor.main_motion", "off") %}
+
+                  green
+
+                  {% elif is_state("binary_sensor.main_motion", "on") %}
+
+                  blue
+
+                  {% elif is_state("binary_sensor.main_motion", "unavailable")
+                  %}
+
+                  red
+
+                  {% else %}
+
+                  red
+
+                  {% endif %}
+                multiline_secondary: false
+          - square: false
+            columns: 3
+            type: grid
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Closet
+                icon: hue:room-closet
+                entity: light.closet
+                tap_action:
+                  action: toggle
+                secondary: >
+                  {% if is_state("light.closet", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.closet", "on") %}
+
+                  {{ ((state_attr("light.closet", "brightness")|int) / 2.55 ) |
+                  round(0) }}% |
+
+                  {% elif is_state("light.closet", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.closet", "off") %}
+
+                  {% elif is_state("light.closet", "on") %}
+                  orange
+                  {% elif is_state("light.closet", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                fill_container: true
+                multiline_secondary: false
+                badge_icon: ''
+                badge_color: ''
+              - type: custom:mushroom-template-card
+                primary: Leimu Light
+                icon: hue:wellness
+                entity: light.leimu
+                tap_action:
+                  action: toggle
+                secondary: >
+                  {% if is_state("light.leimu", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.leimu", "on") %}
+
+                  {{ ((state_attr("light.leimu", "brightness")|int) / 2.55 ) |
+                  round(0) }}% |
+
+                  {% elif is_state("light.leimu", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.leimu", "off") %}
+
+                  {% elif is_state("light.leimu", "on") %}
+                  orange
+                  {% elif is_state("light.leimu", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                fill_container: true
+                multiline_secondary: false
+              - type: custom:mushroom-template-card
+                primary: IKEA Light
+                icon: hue:pillar-turaco-tall
+                entity: light.ikea
+                tap_action:
+                  action: toggle
+                secondary: >
+                  {% if is_state("light.ikea", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.ikea", "on") %}
+
+                  {{ ((state_attr("light.ikea", "brightness")|int) / 2.55 ) |
+                  round(0) }}% |
+
+                  {% elif is_state("light.ikea", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.ikea", "off") %}
+
+                  {% elif is_state("light.ikea", "on") %}
+                  orange
+                  {% elif is_state("light.ikea", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                fill_container: true
+                multiline_secondary: false
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Turn On
+                secondary: First Floor Lights
+                icon: mdi:lightbulb-on
+                badge_color: ''
+                icon_color: green
+                layout: horizontal
+                tap_action:
+                  action: call-service
+                  service: light.turn_on
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.kitchen
+                      - light.ikea
+                      - light.closet
+                      - light.entertainment_room
+                      - light.leimu
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+              - type: custom:mushroom-template-card
+                primary: Turn Off
+                secondary: First Floor Lights
+                icon: mdi:lightbulb-off
+                icon_color: red
+                layout: horizontal
+                tap_action:
+                  action: call-service
+                  service: light.turn_off
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.kitchen
+                      - light.closet
+                      - light.ikea
+                      - light.entertainment_room
+                      - light.leimu
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: First Floor Lights
+                icon: hue:room-kitchen
+                secondary: >
+                  {% if is_state(light.downstairs", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.downstairs", "on") %}
+
+                  {{ ((state_attr("light.downstairs", "brightness")|int) / 2.55
+                  ) | round(0) }}% |
+
+                  {% elif is_state("light.downstairs", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.downstairs", "off") %}
+
+                  {% elif is_state("light.downstairs", "on") %}
+                  orange
+                  {% elif is_state("light.downstairs", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                tap_action:
+                  action: call-service
+                  service: light.turn_on
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.downstairs
+                double_tap_action:
+                  action: call-service
+                  service: light.turn_off
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.downstairs
+                fill_container: true
+                layout: horizontal
+              - type: custom:mushroom-light-card
+                entity:
+                  - light.downstairs
+                primary_info: none
+                secondary_info: none
+                icon_type: none
+                use_light_color: true
+                show_brightness_control: true
+                show_color_temp_control: true
+                show_color_control: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: 1st Floor Blinds
+                secondary: Open Blinds
+                icon: mdi:arrow-up
+                badge_color: ''
+                icon_color: green
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                multiline_secondary: false
+                fill_container: false
+                entity: automation.open_blinds_work_room
+                tap_action:
+                  action: call-service
+                  service: cover.open_cover
+                  target:
+                    entity_id:
+                      - cover.right_blind
+                      - cover.center_blind
+                      - cover.left_blind
+              - type: custom:mushroom-template-card
+                primary: 1st Floor Blinds
+                secondary: Pause
+                icon: mdi:pause-box
+                badge_color: ''
+                icon_color: '#ffb242'
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                multiline_secondary: false
+                fill_container: false
+                tap_action:
+                  action: call-service
+                  perform_action: cover.stop_cover
+                  target:
+                    entity_id:
+                      - cover.right_blind
+                      - cover.center_blind
+                      - cover.left_blind
+                entity: cover.left_blind
+              - type: custom:mushroom-template-card
+                primary: 1st Floor Blinds
+                secondary: Close Blinds
+                icon: mdi:arrow-down
+                icon_color: red
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                entity: automation.close_blinds_work_room
+                tap_action:
+                  action: call-service
+                  service: cover.close_cover
+                  target:
+                    entity_id:
+                      - cover.right_blind
+                      - cover.center_blind
+                      - cover.left_blind
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Left Blind
+                secondary: Close Blinds
+                icon: mdi:arrow-down
+                icon_color: red
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                entity: cover.left_blind
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id: cover.left_blind
+                  perform_action: cover.close_cover
+              - type: custom:mushroom-template-card
+                primary: Mid Blind
+                secondary: Close Blind
+                icon: mdi:arrow-down
+                icon_color: red
+                layout: horizontal
+                hold_action:
+                  action: call-service
+                  service: cover.open_cover
+                  target:
+                    entity_id:
+                      - cover.center_blind
+                double_tap_action:
+                  action: call-service
+                  service: cover.stop_cover
+                  target:
+                    entity_id: cover.center_blind
+                multiline_secondary: false
+                fill_container: false
+                entity: automation.open_blinds_work_room
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id:
+                      - cover.center_blind
+                  perform_action: cover.close_cover
+              - type: custom:mushroom-template-card
+                primary: Right Blind
+                secondary: Close Blind
+                icon: mdi:arrow-down
+                icon_color: red
+                layout: horizontal
+                hold_action:
+                  action: call-service
+                  service: cover.open_cover
+                  target:
+                    entity_id:
+                      - cover.right_blind
+                double_tap_action:
+                  action: call-service
+                  service: cover.stop_cover
+                  target:
+                    entity_id: cover.blind_downstairs_right
+                entity: automation.close_blinds_work_room
+                tap_action:
+                  action: call-service
+                  service: cover.close_cover
+                  target:
+                    entity_id:
+                      - cover.right_blind
+          - type: media-control
+            entity: media_player.dining_room
+            theme: Mushroom Shadow
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ''
+            subtitle: 2nd Floor
+          - square: false
+            columns: 3
+            type: grid
+            cards:
+              - type: custom:mushroom-light-card
+                entity: light.altaz_fan
+                tap_action:
+                  action: toggle
+                use_light_color: true
+                primary_info: none
+                secondary_info: none
+                layout: vertical
+                fill_container: false
+              - type: custom:mushroom-light-card
+                entity: light.accent_light
+                tap_action:
+                  action: toggle
+                use_light_color: true
+                primary_info: none
+                secondary_info: none
+                layout: vertical
+                fill_container: false
+              - type: custom:mushroom-entity-card
+                entity: switch.altaz_fan
+                tap_action:
+                  action: toggle
+                primary_info: none
+                secondary_info: none
+                layout: vertical
+                fill_container: false
+                icon_color: deep-orange
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Top Balcony
+                icon: hue:room-balcony
+                secondary: >
+                  {% if is_state("light.outdoors", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.outdoors", "on") %}
+
+                  {{ ((state_attr("light.outdoors", "brightness")|int) / 2.55 )
+                  | round(0) }}% |
+
+                  {% elif is_state("light.outdoors", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.outdoors", "off") %}
+
+                  {% elif is_state("light.outdoors", "on") %}
+                  orange
+                  {% elif is_state("light.outdoors", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                tap_action:
+                  action: call-service
+                  service: light.turn_on
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.outdoors
+                double_tap_action:
+                  action: call-service
+                  service: light.turn_off
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.outdoors
+                fill_container: true
+                layout: horizontal
+              - type: custom:mushroom-light-card
+                entity: light.outdoors
+                primary_info: none
+                secondary_info: none
+                icon_type: none
+                use_light_color: true
+                show_brightness_control: true
+                show_color_temp_control: true
+                show_color_control: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Nursery Lights
+                icon: hue:room-nursery
+                secondary: >
+                  {% if is_state("light.baby_room_2", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.baby_room_2", "on") %}
+
+                  {{ ((state_attr("light.baby_room_2", "brightness")|int) / 2.55
+                  ) | round(0) }}% |
+
+                  {% elif is_state("light.baby_room_2", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.baby_room_2", "off") %}
+
+                  {% elif is_state("light.baby_room_2", "on") %}
+                  orange
+                  {% elif is_state("light.baby_room_2", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                tap_action:
+                  action: call-service
+                  service: light.turn_on
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.baby_room_2
+                double_tap_action:
+                  action: call-service
+                  service: light.turn_off
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.baby_room_2
+                fill_container: true
+                layout: horizontal
+              - type: custom:mushroom-light-card
+                entity: light.baby_room_2
+                primary_info: none
+                secondary_info: none
+                icon_type: none
+                use_light_color: true
+                show_brightness_control: true
+                show_color_temp_control: true
+                show_color_control: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Nursery Blinds
+                secondary: Open Blinds
+                icon: mdi:arrow-up
+                badge_color: ''
+                icon_color: green
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                multiline_secondary: false
+                fill_container: false
+                entity: cover.nursery_blind
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id: cover.nursery_blind
+                  perform_action: cover.open_cover
+              - type: custom:mushroom-template-card
+                primary: Nursery Blinds
+                secondary: Pause
+                icon: mdi:pause-box
+                badge_color: ''
+                icon_color: '#ffb242'
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                multiline_secondary: false
+                fill_container: false
+                entity: cover.nursery_blind
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id: cover.nursery_blind
+                  data: {}
+                  perform_action: cover.stop_cover
+              - type: custom:mushroom-template-card
+                primary: Nursery Blinds
+                secondary: Close Blinds
+                icon: mdi:arrow-down
+                icon_color: red
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                entity: cover.nursery_blind
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id: cover.nursery_blind
+                  perform_action: cover.close_cover
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Office Lights
+                icon: hue:room-office
+                secondary: >
+                  {% if is_state("light.pc", "off") %}
+
+                  Off |
+
+                  {% elif is_state("light.pc", "on") %}
+
+                  {{ ((state_attr("light.pc", "brightness")|int) / 2.55 ) |
+                  round(0) }}% |
+
+                  {% elif is_state("light.pc", "unavailable") %}
+
+                  Unavailable
+
+                  {% else %}
+
+                  Check Light
+
+                  {% endif %}
+                icon_color: |
+                  {% if is_state("light.pc", "off") %}
+
+                  {% elif is_state("light.pc", "on") %}
+                  orange
+                  {% elif is_state("light.pc", "unavailable") %}
+                  red
+                  {% else %}
+                  red
+                  {% endif %}
+                hold_action:
+                  action: more-info
+                tap_action:
+                  action: call-service
+                  service: light.turn_on
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.pc
+                double_tap_action:
+                  action: call-service
+                  service: light.turn_off
+                  data: {}
+                  target:
+                    entity_id:
+                      - light.pc
+                fill_container: true
+                layout: horizontal
+              - type: custom:mushroom-light-card
+                entity: light.pc
+                primary_info: none
+                secondary_info: none
+                icon_type: none
+                use_light_color: true
+                show_brightness_control: true
+                show_color_temp_control: true
+                show_color_control: true
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Office Blinds
+                secondary: Open Blinds
+                icon: mdi:arrow-up
+                badge_color: ''
+                icon_color: green
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                multiline_secondary: false
+                fill_container: false
+                entity: automation.open_blinds_work_room
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id: cover.office_blind_2
+                  perform_action: cover.open_cover
+                  data: {}
+              - type: custom:mushroom-template-card
+                primary: Office Blinds
+                secondary: Pause
+                icon: mdi:pause-box
+                badge_color: ''
+                icon_color: '#ffb242'
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                multiline_secondary: false
+                fill_container: false
+                entity: automation.open_blinds_work_room
+                tap_action:
+                  action: perform-action
+                  target: {}
+                  perform_action: cover.stop_cover
+              - type: custom:mushroom-template-card
+                primary: Office Blinds
+                secondary: Close Blinds
+                icon: mdi:arrow-down
+                icon_color: red
+                layout: horizontal
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                entity: automation.close_blinds_work_room
+                tap_action:
+                  action: perform-action
+                  target:
+                    entity_id: cover.office_blind_2
+                  perform_action: cover.close_cover
+                  data: {}
+          - type: media-control
+            entity: media_player.bedroom
+            theme: Mushroom Shadow
+  - title: WIP
+    badges: []
+    cards:
+      - type: custom:mushroom-title-card
+        title: General
+      - type: custom:mushroom-template-card
+        primary: |-
+          {% set time = now().hour %}
+          {% if (time >= 18) %}
+            Good Evening, {{user}}!
+          {% elif (time >= 12) %}
+            Good Afternoon, {{user}}!
+          {% elif (time >= 5) %}
+            Good Morning, {{user}}!
+          {% else %}
+            Hello, {{user}}!
+          {% endif %}
+        secondary: ''
+        icon: ''
+      - type: custom:mini-graph-card
+        hours_to_show: 120
+        align_state: center
+        show:
+          name: false
+          icon: false
+          labels: true
+          labels_secondary: true
+        entities:
+          - entity: sensor.sonoff_snzb_02d_humidity
+            show_state: false
+            name: 2nd Floor
+          - entity: sensor.sonoff_temp_downstairs_humidity
+            show_state: false
+            name: 1st Floor
+          - color: gray
+            entity: sun.sun
+            name: sun
+            y_axis: secondary
+            show_line: false
+            show_points: false
+            show_legend: false
+          - entity: sensor.office_sensor_humidity
+            aggregate_func: max
+            name: Max
+            show_graph: false
+            show:
+              in_header: true
+              legend_value: true
+              extremas: true
+        state_map:
+          - value: below_horizon
+            label: Night
+          - value: above_horizon
+            label: Day
+      - type: custom:mini-graph-card
+        hours_to_show: 48
+        align_state: center
+        show:
+          name: false
+          icon: false
+          labels: true
+          labels_secondary: true
+        entities:
+          - entity: sensor.sonoff_snzb_02d_temperature
+            show_state: false
+            name: 2nd Floor
+          - entity: sensor.sonoff_temp_downstairs_temperature
+            show_state: false
+            name: 1st Floor
+          - color: gray
+            entity: sun.sun
+            name: sun
+            y_axis: secondary
+            show_line: false
+            show_points: false
+            show_legend: false
+          - entity: sensor.sonoff_snzb_02d_temperature
+            aggregate_func: max
+            name: Max
+            show_graph: false
+            show:
+              in_header: true
+              legend_value: true
+              extremas: true
+          - entity: sensor.sonoff_temp_downstairs_temperature
+            aggregate_func: max
+            name: Max
+            show_graph: false
+            show:
+              in_header: true
+              legend_value: true
+              extremas: true
+          - entity: sensor.sonoff_snzb_02d_temperature
+            aggregate_func: min
+            name: Min
+            show_graph: false
+          - entity: sensor.sonoff_temp_downstairs_temperature
+            aggregate_func: avg
+            name: Avg
+            color: green
+            show_graph: false
+        state_map:
+          - value: below_horizon
+            label: Night
+          - value: above_horizon
+            label: Day
+      - type: custom:mushroom-title-card
+        title: Lights
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+      - type: horizontal-stack
+        cards:
+          - type: custom:slider-button-card
+            entity: light.ikea_bottom
+            slider:
+              direction: left-right
+              background: gradient
+              use_state_color: true
+              use_percentage_bg_opacity: false
+              show_track: false
+              toggle_on_click: false
+              force_square: false
+            show_name: true
+            show_state: true
+            compact: false
+            icon:
+              show: true
+              use_state_color: true
+              tap_action:
+                action: more-info
+            action_button:
+              mode: toggle
+              icon: mdi:power
+              show: true
+              show_spinner: true
+              tap_action:
+                action: toggle
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+          - type: custom:mushroom-light-card
+            entity: light.hue_bloom_1
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Open Blinds
+            secondary: ''
+            icon: mdi:arrow-up
+            badge_color: ''
+            icon_color: green
+            layout: vertical
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
+            multiline_secondary: false
+            fill_container: false
+            tap_action:
+              action: perform-action
+              perform_action: cover.stop_cover
+              target:
+                entity_id:
+                  - cover.office_blind_2
+          - type: custom:mushroom-template-card
+            primary: Close Blinds
+            secondary: ''
+            icon: mdi:arrow-down
+            icon_color: red
+            layout: vertical
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
+            entity: automation.close_blinds_work_room
+            tap_action:
+              action: call-service
+              service: automation.trigger
+              data: {}
+              target:
+                entity_id:
+                  - automation.close_blinds_downstairs_left
+                  - automation.close_blinds_downstairs_center
+                  - automation.close_blinds_downstairs_right
+  - title: Sports
+    path: sports
+    icon: ''
+    badges:
+      - type: custom:teamtracker-card
+        entity: sensor.team_tracker
+        outline: true
+        outline_color: deeppink
+      - type: custom:teamtracker-card
+        entity: sensor.chelsea_fc
+        outline: true
+        outline_color: deeppink
+      - type: custom:teamtracker-card
+        entity: sensor.bayern_mun
+        outline: true
+        outline_color: deeppink
+      - type: custom:teamtracker-card
+        entity: sensor.bayern_cl
+        outline: true
+        outline_color: deeppink
+    cards: []
+  - title: Battery Status
+    path: battery-status
+    cards:
+      - type: custom:battery-state-card
+title: Main
